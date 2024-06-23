@@ -1,0 +1,62 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+}
+.board{
+    padding: 0;
+    display: grid;
+    width: 810px;
+    border-radius: 1%;
+    border: 5px solid black;
+    grid-template-columns: repeat(8, 100px);
+    grid-template-rows: repeat(8, 100px);
+    justify-content: center;
+    margin-top: 5%
+    
+}
+.square{ 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.square svg {
+    height: 50px;
+    width: 50px;
+    position: relative;
+    z-index: -9;
+}
+
+path{
+    position: relative;
+    z-index: -10;
+}
+
+.light {
+    background-color:blanchedalmond;
+}
+
+
+.dark {
+    background-color: peru;
+}
+.white {
+    fill:rgb(231, 176, 137);
+    
+}
+.selected {
+    fill: green;
+}
+
+.piece{
+    cursor: pointer;
+    position: relative;
+    z-index: 9;
+}
