@@ -48,11 +48,11 @@ path{
     background-color: peru;
 }
 .white {
-    fill:rgb(231, 176, 137);
+    fill:rgb(234, 187, 153);
     
 }
 .selected {
-    fill: green;
+    filter: brightness(70%) !important;
 }
 
 .piece{
