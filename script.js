@@ -17,9 +17,18 @@ const pieces = [
     pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
     rook, knight, bishop, queen, king, bishop, knight, rook,
 ];
+const PIECE_MAP = {
+    rook: "rook",
+    knight: "knight",
+    bishop: "bishop",
+    queen: "queen",
+    king: "king",
+    pawn: "pawn"
+}
 
-let selectedPiece;
-let allPieces;
+
+let selectedPieceHTML, selectedPiece;
+let allPieces = [];
 createBoard();
 
 
@@ -49,7 +58,12 @@ function createBoard(){
             if(row==7 || row==8){
                 color = "black";
             }
-            piece = new Piece(row, column, startPiece, color);
+            let pieceType;
+            if(startPiece == pawn) { pieceType="pawn"; } if(startPiece == rook) { pieceType="rook"; } 
+            if(startPiece == knight) { pieceType="knight"; } if(startPiece == bishop) { pieceType="bishop"; } 
+            if(startPiece == queen) { pieceType="queen"; } if(startPiece == king) { pieceType="king"; } 
+            piece = new Piece(row, column, startPiece, color, pieceType);
+            allPieces.push(piece);
             square.innerHTML = piece.html;
             if(color=="white"){
                 square.firstChild.firstChild.classList.add("white");
@@ -61,7 +75,7 @@ function createBoard(){
     })
     
     const allSquares = document.querySelectorAll(".square");
-    allPieces = document.querySelectorAll(".piece");
+    //allPieces = document.querySelectorAll(".piece");
 
     allSquares.forEach(square => {
         square.addEventListener('click', click);
@@ -70,30 +84,51 @@ function createBoard(){
 
 function click(e){
     if(e.target.classList[0]=="piece"){
-        if(selectedPiece!= null){//if there is already a selectedPiece
-            selectedPiece.parentElement.classList.remove("selected");
+        if(selectedPieceHTML == e.target){//if you click the same piece again, reset the selectedPiece
+            selectedPieceHTML.parentElement.classList.remove("selected");
+            selectedPieceHTML = null;
+            selectedPiece = null;
+            return;
         }
-        allPieces.forEach(piece => {
-            if(piece.parentElement.getAttribute("x") == e.target.parentElement.getAttribute("x") &&
-                piece.parentElement.getAttribute("y") == e.target.parentElement.getAttribute("y")){
+        if(selectedPieceHTML!= null){//if there is already a selectedPieceHTML
+            selectedPieceHTML.parentElement.classList.remove("selected"); //switches the selected piece
+        }
+        allPieces.forEach(piece => {//finds the correct piece and stores it
+            if(piece.column == e.target.parentElement.getAttribute("x") && piece.getRow == e.target.parentElement.getAttribute("y")){
+                selectedPieceHTML = e.target;
                 selectedPiece = piece;
             }
         })
-        console.log(selectedPiece);
-        selectedPiece.parentElement.classList.add("selected");
+        
+        selectedPieceHTML.parentElement.classList.add("selected");
     }
     else if(e.target.classList[0] == "square" && e.target.firstChild == null){
-        if(selectedPiece!=null){//if you click a tile, and you have another piece selected
-            selectedPiece.parentElement.classList.remove("selected");
-            movePiece(selectedPiece, e.target);
+        if(selectedPieceHTML!=null){//if you click a tile, and you have another piece selected
+            selectedPieceHTML.parentElement.classList.remove("selected");
+            movePiece(selectedPiece, e.target, selectedPieceHTML.parentElement);
         }
     }
 }
 
 
-function movePiece(piece, newSquare){
-    console.log(piece, newSquare);
+function movePiece(piece, newSquare, oldSquare){
+    //console.log(piece.html);
+
+    //if(piece.isValidMove(newSquare, oldSquare))
+    //piece.isValidMove(newSquare, oldSquare);
+    newSquare.innerHTML = piece.html;
+    oldSquare.innerHTML = "";
+    piece.setRow(newSquare.getAttribute("y"));
+    piece.setCol(newSquare.getAttribute("x"));
+
+    
+    if(piece.color=="white"){
+        newSquare.firstChild.firstChild.classList.add("white");
+    }else{
+        newSquare.firstChild.firstChild.classList.add("black");
+    }
 
 
+    selectedPieceHTML = null;
     selectedPiece = null;
 }
