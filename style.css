@@ -52,7 +52,7 @@ path{
     
 }
 .selected {
-    filter: brightness(70%) !important;
+    filter: brightness(70%);
 }
 
 .piece{

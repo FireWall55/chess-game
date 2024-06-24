@@ -26,7 +26,80 @@ export default class Piece{
         this.column = col;
     }
 
-    isValidMove(newLoc, oldLoc) {
-        
+    isValidMove(newLoc, oldLoc, move, isCapturing, allPieces) {//newLoc and oldLoc are squares
+        let canMove;
+        let newY = parseInt(newLoc.getAttribute("y"));
+        let newX = parseInt(newLoc.getAttribute("x"));
+        let oldY = parseInt(oldLoc.getAttribute("y"));
+        let oldX = parseInt(oldLoc.getAttribute("x"));
+
+//        allPieces.array.forEach(element => {
+//            if(element.)
+//        });
+
+
+
+        if(this.piece=="pawn" && isCapturing==false){//checks pawn movement (no capturing)
+            console.log("pawn just moved");
+            if(((move<=1 && newY == oldY+2) || newY==oldY+1) && newX == oldX){
+                console.log("can move");
+                return true;
+            }else{
+                console.log("can't move");
+                return false;
+            }
+        }
+        if(this.piece=="pawn" && isCapturing==true){ //checks pawn capturing movement
+            if(newY==oldY+1 && (newX==oldX+1 || newX==oldX-1)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        if(this.piece=="rook"){
+            console.log("rook just moved");
+            if(newX==oldX || newY==oldY){//horizontal or vertical
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        if(this.piece=="knight"){
+            console.log("knight just moved");
+            if((Math.abs(newX-oldX)==2 && Math.abs(newY-oldY)==1 )|| (Math.abs(newY-oldY)==2 && Math.abs(newX-oldX)==1 )){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        if(this.piece=="bishop"){
+            console.log("bishop just moved");
+            if(Math.abs(newX-oldX)==Math.abs(newY-oldY)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        if(this.piece=="queen"){
+            console.log("queen just moved");
+            if(newX==oldX || newY==oldY){//horizontal or vertical
+                return true;
+            }
+            else if(Math.abs(newX-oldX)==Math.abs(newY-oldY)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        if(this.piece=="king"){
+            console.log("king just moved");
+            if(Math.abs(newX-oldX)<=1 && Math.abs(newY-oldY)<=1){
+                return true
+            }else{
+                return false;
+            }
+        }
+        return false;
     }
 }

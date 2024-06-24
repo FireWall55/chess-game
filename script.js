@@ -29,6 +29,7 @@ const PIECE_MAP = {
 
 let selectedPieceHTML, selectedPiece;
 let allPieces = [];
+let move = 0;
 createBoard();
 
 
@@ -37,8 +38,8 @@ function createBoard(){
     pieces.forEach((startPiece, i )=> {
         const square = document.createElement('div');
         square.classList.add('square');
-        let column = 1+(i%8);
-        let row = 8-Math.floor(i/8);
+        let column = (1+(i%8)).toString();
+        let row = (8-Math.floor(i/8)).toString();
         square.setAttribute("x", column);
         square.setAttribute("y", row);
         if ((i%8 + Math.floor(i/8))%2 == 1) {
@@ -91,7 +92,13 @@ function click(e){
             return;
         }
         if(selectedPieceHTML!= null){//if there is already a selectedPieceHTML
-            selectedPieceHTML.parentElement.classList.remove("selected"); //switches the selected piece
+            if(selectedPieceHTML.firstChild.classList[0] != e.target.firstChild.classList[0]){//if you click a piece of the opposite color
+                selectedPieceHTML.parentElement.classList.remove("selected");
+                capture(selectedPiece, e.target.parentElement, selectedPieceHTML.parentElement);
+                return;
+            }else{
+                selectedPieceHTML.parentElement.classList.remove("selected"); //switches the selected piece
+            }
         }
         allPieces.forEach(piece => {//finds the correct piece and stores it
             if(piece.column == e.target.parentElement.getAttribute("x") && piece.getRow == e.target.parentElement.getAttribute("y")){
@@ -102,7 +109,7 @@ function click(e){
         
         selectedPieceHTML.parentElement.classList.add("selected");
     }
-    else if(e.target.classList[0] == "square" && e.target.firstChild == null){
+    else if(e.target.classList[0] == "square" && e.target.firstChild == null){//empty square
         if(selectedPieceHTML!=null){//if you click a tile, and you have another piece selected
             selectedPieceHTML.parentElement.classList.remove("selected");
             movePiece(selectedPiece, e.target, selectedPieceHTML.parentElement);
@@ -114,21 +121,49 @@ function click(e){
 function movePiece(piece, newSquare, oldSquare){
     //console.log(piece.html);
 
-    //if(piece.isValidMove(newSquare, oldSquare))
-    //piece.isValidMove(newSquare, oldSquare);
-    newSquare.innerHTML = piece.html;
-    oldSquare.innerHTML = "";
-    piece.setRow(newSquare.getAttribute("y"));
-    piece.setCol(newSquare.getAttribute("x"));
+    if(piece.isValidMove(newSquare, oldSquare, move, false, allPieces)){
+        move+=1;
+        newSquare.innerHTML = piece.html;
+        oldSquare.innerHTML = "";
+        piece.setRow(newSquare.getAttribute("y"));
+        piece.setCol(newSquare.getAttribute("x"));
 
-    
-    if(piece.color=="white"){
-        newSquare.firstChild.firstChild.classList.add("white");
-    }else{
-        newSquare.firstChild.firstChild.classList.add("black");
+        
+        if(piece.color=="white"){
+            newSquare.firstChild.firstChild.classList.add("white");
+        }else{
+            newSquare.firstChild.firstChild.classList.add("black");
+        }
+
     }
+        selectedPieceHTML = null;
+        selectedPiece = null;
+}
+
+function capture(piece, newSquare, oldSquare){
 
 
-    selectedPieceHTML = null;
-    selectedPiece = null;
+    if(piece.isValidMove(newSquare, oldSquare, move, true, allPieces)){
+        move+=1;
+        allPieces.forEach((piece_i, i) => {//goes through all the pieces to find the one you want to delete
+            if(piece_i.getRow==newSquare.getAttribute("y") && piece_i.col == newSquare.getAttribute("x")){
+                allPieces.splice(i, 1);
+                return;
+            }
+        })
+        newSquare.innerHTML = piece.html;
+        oldSquare.innerHTML = "";
+        piece.setRow(newSquare.getAttribute("y"));
+        piece.setCol(newSquare.getAttribute("x"));
+
+        if(piece.color=="white"){
+            newSquare.firstChild.firstChild.classList.add("white");
+        }else{
+            newSquare.firstChild.firstChild.classList.add("black");
+        }
+
+    }
+        selectedPieceHTML = null;
+        selectedPiece = null;
+
 }
