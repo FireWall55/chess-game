@@ -101,7 +101,7 @@ function click(e){
             }
         }
         allPieces.forEach(piece => {//finds the correct piece and stores it
-            if(piece.column == e.target.parentElement.getAttribute("x") && piece.getRow == e.target.parentElement.getAttribute("y")){
+            if(piece.x == e.target.parentElement.getAttribute("x") && piece.gety == e.target.parentElement.getAttribute("y")){
                 selectedPieceHTML = e.target;
                 selectedPiece = piece;
             }
@@ -121,12 +121,12 @@ function click(e){
 function movePiece(piece, newSquare, oldSquare){
     //console.log(piece.html);
 
-    if(piece.isValidMove(newSquare, oldSquare, move, false, allPieces)){
+    if(piece.isValidMove(newSquare, oldSquare, false, allPieces)){
         move+=1;
         newSquare.innerHTML = piece.html;
         oldSquare.innerHTML = "";
-        piece.setRow(newSquare.getAttribute("y"));
-        piece.setCol(newSquare.getAttribute("x"));
+        piece.sety(newSquare.getAttribute("y"));
+        piece.setx(newSquare.getAttribute("x"));
 
         
         if(piece.color=="white"){
@@ -143,18 +143,18 @@ function movePiece(piece, newSquare, oldSquare){
 function capture(piece, newSquare, oldSquare){
 
 
-    if(piece.isValidMove(newSquare, oldSquare, move, true, allPieces)){
+    if(piece.isValidMove(newSquare, oldSquare, true, allPieces)){
         move+=1;
         allPieces.forEach((piece_i, i) => {//goes through all the pieces to find the one you want to delete
-            if(piece_i.getRow==newSquare.getAttribute("y") && piece_i.col == newSquare.getAttribute("x")){
+            if(piece_i.gety==newSquare.getAttribute("y") && piece_i.getx == newSquare.getAttribute("x")){
                 allPieces.splice(i, 1);
                 return;
             }
         })
         newSquare.innerHTML = piece.html;
         oldSquare.innerHTML = "";
-        piece.setRow(newSquare.getAttribute("y"));
-        piece.setCol(newSquare.getAttribute("x"));
+        piece.sety(newSquare.getAttribute("y"));
+        piece.setx(newSquare.getAttribute("x"));
 
         if(piece.color=="white"){
             newSquare.firstChild.firstChild.classList.add("white");
