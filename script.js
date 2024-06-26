@@ -30,6 +30,7 @@ const PIECE_MAP = {
 let selectedPieceHTML, selectedPiece;
 let allPieces = [];
 let move = 0;
+let whiteMove = true; //if true, white's turn, if false, black's turn
 createBoard();
 
 
@@ -101,7 +102,7 @@ function click(e){
             }
         }
         allPieces.forEach(piece => {//finds the correct piece and stores it
-            if(piece.x == e.target.parentElement.getAttribute("x") && piece.gety == e.target.parentElement.getAttribute("y")){
+            if(piece.x == e.target.parentElement.getAttribute("x") && piece.y == e.target.parentElement.getAttribute("y")){
                 selectedPieceHTML = e.target;
                 selectedPiece = piece;
             }
@@ -121,7 +122,15 @@ function click(e){
 function movePiece(piece, newSquare, oldSquare){
     //console.log(piece.html);
 
-    if(piece.isValidMove(newSquare, oldSquare, false, allPieces)){
+    if(piece.isValidMove(newSquare, oldSquare, false, allPieces, whiteMove)){
+        whiteMove = !whiteMove;
+        /*
+        if(whiteMove){
+            text.innerText = "It's white's move";
+        }else{
+            text.innerText = "It's black's move";
+        }
+        */
         move+=1;
         newSquare.innerHTML = piece.html;
         oldSquare.innerHTML = "";
@@ -143,10 +152,11 @@ function movePiece(piece, newSquare, oldSquare){
 function capture(piece, newSquare, oldSquare){
 
 
-    if(piece.isValidMove(newSquare, oldSquare, true, allPieces)){
+    if(piece.isValidMove(newSquare, oldSquare, true, allPieces, whiteMove)){
+        whiteMove = !whiteMove;
         move+=1;
         allPieces.forEach((piece_i, i) => {//goes through all the pieces to find the one you want to delete
-            if(piece_i.gety==newSquare.getAttribute("y") && piece_i.getx == newSquare.getAttribute("x")){
+            if(piece_i.y==newSquare.getAttribute("y") && piece_i.x == newSquare.getAttribute("x")){
                 allPieces.splice(i, 1);
                 return;
             }

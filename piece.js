@@ -13,12 +13,6 @@ export default class Piece{
     get html(){
         return this.pieceHTML;
     }
-    get gety(){
-        return this.y;
-    }
-    get getx(){
-        return this.x;
-    }
     sety(y){
         this.y = y;
     }
@@ -27,7 +21,16 @@ export default class Piece{
         this.x = col;
     }
 
-    isValidMove(newLoc, oldLoc, isCapturing, allPieces) {//newLoc and oldLoc are squares
+    isValidMove(newLoc, oldLoc, isCapturing, allPieces, whiteMove) {//newLoc and oldLoc are squares
+
+        if(this.color=="black" && whiteMove){
+            return false;
+        }
+        if(this.color=="white" && !whiteMove){
+            return false;
+        }
+
+
         let canMove = true;
         let newY = parseInt(newLoc.getAttribute("y"));
         let newX = parseInt(newLoc.getAttribute("x"));
@@ -53,7 +56,18 @@ export default class Piece{
 
         if(this.piece=="pawn" && isCapturing==false){//checks pawn movement (no capturing)
             console.log("pawn just moved");
-            
+            if(this.color=="black"){
+                if(((this.moves<1 && newY == oldY-2) || newY==oldY-1) && newX == oldX){
+                    if(this.checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, "pawn")){
+                        console.log("There is a piece in your path");
+                        return false;
+                    }
+                    this.moves+=1;
+                    return true;
+                }else{
+                    return false;
+                } 
+            }
             
             if(((this.moves<1 && newY == oldY+2) || newY==oldY+1) && newX == oldX){
                 if(this.checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, "pawn")){
@@ -67,6 +81,17 @@ export default class Piece{
             }
         }
         if(this.piece=="pawn" && isCapturing==true){ //checks pawn capturing movement
+            console.log("pawn just captured");
+            if(this.color=="black"){
+                if(newY==oldY-1 && (newX==oldX+1 || newX==oldX-1)){
+                    this.moves+=1
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+
             if(newY==oldY+1 && (newX==oldX+1 || newX==oldX-1)){
                 this.moves+=1
                 return true;
@@ -114,7 +139,7 @@ export default class Piece{
         if(this.piece=="queen"){
             console.log("queen just moved");
             if(newX==oldX || newY==oldY){//horizontal or vertical
-                if(this.checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, "queen")){//if there is a piece in the path
+                if(this.checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, "rook")){//if there is a piece in the path
                     console.log("there is a piece in your path");
                     return false;
                 }
@@ -122,7 +147,7 @@ export default class Piece{
                 return true;
             }
             else if(Math.abs(newX-oldX)==Math.abs(newY-oldY)){
-                if(this.checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, "queen")){//if there is a piece in the path
+                if(this.checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, "bishop")){//if there is a piece in the path
                     console.log("there is a piece in your path");
                     return false;
                 }
@@ -145,13 +170,22 @@ export default class Piece{
     }
 
 
+
+
+
+
+
+
+
+
+    
     checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, pieceType){
         let isInPath = false;
-        if(pieceType=="rook" || pieceType=="queen"){
+        if(pieceType=="rook"){
             if(newY>oldY && newX==oldX){//checks up
                 for(let i = oldY+1; i<newY; i++){
                     allPieces.forEach(piece => {
-                        if(piece.gety==i && piece.getx==oldX){
+                        if(piece.y==i && piece.x==oldX){
                             isInPath=true;
                         }
                     });
@@ -159,7 +193,7 @@ export default class Piece{
             }else if(newY<oldY && newX==oldX){//checks down
                 for(let i = oldY-1; i>newY; i--){
                     allPieces.forEach(piece => {
-                        if(piece.gety==i && piece.getx==oldX){
+                        if(piece.y==i && piece.x==oldX){
                             isInPath=true;
                         }
                     });
@@ -167,7 +201,7 @@ export default class Piece{
             }else if(newY==oldY && newX>oldX){//checks right 
                 for(let i = oldX+1; i<newX; i++){
                     allPieces.forEach(piece => {
-                        if(piece.getx==i && piece.gety==oldY){
+                        if(piece.x==i && piece.y==oldY){
                             isInPath=true;
                         }
                     });
@@ -175,7 +209,7 @@ export default class Piece{
             }else if(newY==oldY && newX<oldX){//checks left
                 for(let i = oldX-1; i>newX; i--){
                     allPieces.forEach(piece => {
-                        if(piece.getx==i && piece.gety==oldY){
+                        if(piece.x==i && piece.y==oldY){
                             isInPath=true;
                         }
                     });
@@ -185,18 +219,18 @@ export default class Piece{
         if(pieceType=="pawn"){
             if((newY-oldY)==2){
                 allPieces.forEach(piece => {
-                    if(piece.gety==oldY+1 && piece.getx==oldX){
+                    if(piece.y==oldY+1 && piece.x==oldX){
                         isInPath=true;
                     }
                 })
             }
         }
-        if(pieceType=="bishop" || pieceType=="queen"){// || pieceType=="queen"
+        if(pieceType=="bishop"){//
             if(newY-oldY > 0){//moving up
                 if(newX-oldX > 0){//moving up and right
                     for(let i = oldX+1; i<newX; i++){
                         allPieces.forEach(piece => {
-                            if(piece.getx==i && piece.gety==oldY+(i-oldX)){
+                            if(piece.x==i && piece.y==oldY+(i-oldX)){
                                 isInPath = true;
                             }
                         })
@@ -204,7 +238,7 @@ export default class Piece{
                 }else{//moving up and left
                     for(let i = oldX-1; i>newX; i--){
                         allPieces.forEach(piece => {
-                            if(piece.getx==i && piece.gety==oldY + (-1 * (i-oldX))){
+                            if(piece.x==i && piece.y==oldY + (-1 * (i-oldX))){
                                 isInPath = true;
                             }
                         })
@@ -214,7 +248,7 @@ export default class Piece{
                 if(newX-oldX > 0){//moving down and right
                     for(let i = oldX+1; i<newX; i++){
                         allPieces.forEach(piece => {
-                            if(piece.getx==i && piece.gety==oldY-(i-oldX)){
+                            if(piece.x==i && piece.y==oldY-(i-oldX)){
                                 isInPath = true;
                             }
                         })
@@ -222,7 +256,7 @@ export default class Piece{
                 }else{//moving down and left
                     for(let i = oldX-1; i>newX; i--){
                         allPieces.forEach(piece => {
-                            if(piece.getx==i && piece.gety==oldY - (-1 * (i-oldX))){
+                            if(piece.x==i && piece.y==oldY - (-1 * (i-oldX))){
                                 isInPath = true;
                             }
                         })
