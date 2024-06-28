@@ -170,15 +170,6 @@ export default class Piece{
     }
 
 
-
-
-
-
-
-
-
-
-    
     checkIfPieceInPath(allPieces, newX, newY, oldX, oldY, pieceType){
         let isInPath = false;
         if(pieceType=="rook"){
@@ -269,4 +260,19 @@ export default class Piece{
 
         return isInPath;
     }
+
+
+    numOfValidMoves(allPieces){
+        
+    }
+    
+
+
+
+
+    
 }
+
+
+
+

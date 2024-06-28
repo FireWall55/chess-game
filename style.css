@@ -22,9 +22,16 @@ body{
     
 }
 .text{
-    margin-top: 10rem;
     width: 500px;
     font-size: 4rem;
+    height: 100px;
+    margin-top: 4rem;
+}
+.check{
+    width: 500px;
+    font-size: 4rem;
+    height: 100px;
+    margin-top: 8rem;
 }
 
 .square{ 

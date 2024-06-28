@@ -1,6 +1,8 @@
 import Piece from "./piece.js"
 
 const board = document.querySelector(".board");
+const text = document.querySelector(".text");
+const checkText = document.querySelector(".check");
 const pawn = '<div id="pawn" class="piece"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M215.5 224c29.2-18.4 48.5-50.9 48.5-88c0-57.4-46.6-104-104-104S56 78.6 56 136c0 37.1 19.4 69.6 48.5 88H96c-17.7 0-32 14.3-32 32c0 16.5 12.5 30 28.5 31.8L80 400H240L227.5 287.8c16-1.8 28.5-15.3 28.5-31.8c0-17.7-14.3-32-32-32h-8.5zM22.6 473.4c-4.2 4.2-6.6 10-6.6 16C16 501.9 26.1 512 38.6 512H281.4c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16L256 432H64L22.6 473.4z"/></svg></div>'
 const rook = '<div id="rook" class="piece"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M32 192V48c0-8.8 7.2-16 16-16h64c8.8 0 16 7.2 16 16V88c0 4.4 3.6 8 8 8h32c4.4 0 8-3.6 8-8V48c0-8.8 7.2-16 16-16h64c8.8 0 16 7.2 16 16V88c0 4.4 3.6 8 8 8h32c4.4 0 8-3.6 8-8V48c0-8.8 7.2-16 16-16h64c8.8 0 16 7.2 16 16V192c0 10.1-4.7 19.6-12.8 25.6L352 256l16 144H80L96 256 44.8 217.6C36.7 211.6 32 202.1 32 192zm176 96h32c8.8 0 16-7.2 16-16V224c0-17.7-14.3-32-32-32s-32 14.3-32 32v48c0 8.8 7.2 16 16 16zM22.6 473.4L64 432H384l41.4 41.4c4.2 4.2 6.6 10 6.6 16c0 12.5-10.1 22.6-22.6 22.6H38.6C26.1 512 16 501.9 16 489.4c0-6 2.4-11.8 6.6-16z"/></svg></div>'
 const knight = '<div id="knight" class="piece"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M96 48L82.7 61.3C70.7 73.3 64 89.5 64 106.5V238.9c0 10.7 5.3 20.7 14.2 26.6l10.6 7c14.3 9.6 32.7 10.7 48.1 3l3.2-1.6c2.6-1.3 5-2.8 7.3-4.5l49.4-37c6.6-5 15.7-5 22.3 0c10.2 7.7 9.9 23.1-.7 30.3L90.4 350C73.9 361.3 64 380 64 400H384l28.9-159c2.1-11.3 3.1-22.8 3.1-34.3V192C416 86 330 0 224 0H83.8C72.9 0 64 8.9 64 19.8c0 7.5 4.2 14.3 10.9 17.7L96 48zm24 68a20 20 0 1 1 40 0 20 20 0 1 1 -40 0zM22.6 473.4c-4.2 4.2-6.6 10-6.6 16C16 501.9 26.1 512 38.6 512H409.4c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16L384 432H64L22.6 473.4z"/></svg></div>'
@@ -17,23 +19,20 @@ const pieces = [
     pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
     rook, knight, bishop, queen, king, bishop, knight, rook,
 ];
-const PIECE_MAP = {
-    rook: "rook",
-    knight: "knight",
-    bishop: "bishop",
-    queen: "queen",
-    king: "king",
-    pawn: "pawn"
-}
+const knightx = [-2, -2, -1, -1, 1, 1, 2, 2];
+const knighty = [-1, 1, 2, -2, 2, -2, 1, -1];
 
 
 let selectedPieceHTML, selectedPiece;
 let allPieces = [];
 let move = 0;
+let colorInCheck = "";
 let whiteMove = true; //if true, white's turn, if false, black's turn
 createBoard();
 
 
+
+//Make "legal moves" thing
 
 function createBoard(){
     pieces.forEach((startPiece, i )=> {
@@ -105,6 +104,7 @@ function click(e){
             if(piece.x == e.target.parentElement.getAttribute("x") && piece.y == e.target.parentElement.getAttribute("y")){
                 selectedPieceHTML = e.target;
                 selectedPiece = piece;
+                console.log(selectedPiece.x, selectedPiece.y, selectedPiece.piece);
             }
         })
         
@@ -124,13 +124,13 @@ function movePiece(piece, newSquare, oldSquare){
 
     if(piece.isValidMove(newSquare, oldSquare, false, allPieces, whiteMove)){
         whiteMove = !whiteMove;
-        /*
+        
         if(whiteMove){
             text.innerText = "It's white's move";
         }else{
             text.innerText = "It's black's move";
         }
-        */
+        
         move+=1;
         newSquare.innerHTML = piece.html;
         oldSquare.innerHTML = "";
@@ -143,6 +143,11 @@ function movePiece(piece, newSquare, oldSquare){
         }else{
             newSquare.firstChild.firstChild.classList.add("black");
         }
+        if(check(allPieces)){
+            checkText.innerText = "IN CHECK";
+        }else{
+            checkText.innerText = "NOT IN CHECK";
+        }
 
     }
         selectedPieceHTML = null;
@@ -154,6 +159,14 @@ function capture(piece, newSquare, oldSquare){
 
     if(piece.isValidMove(newSquare, oldSquare, true, allPieces, whiteMove)){
         whiteMove = !whiteMove;
+
+        if(whiteMove){
+            text.innerText = "It's white's move";
+        }else{
+            text.innerText = "It's black's move";
+        }
+
+
         move+=1;
         allPieces.forEach((piece_i, i) => {//goes through all the pieces to find the one you want to delete
             if(piece_i.y==newSquare.getAttribute("y") && piece_i.x == newSquare.getAttribute("x")){
@@ -171,9 +184,96 @@ function capture(piece, newSquare, oldSquare){
         }else{
             newSquare.firstChild.firstChild.classList.add("black");
         }
-
+        if(check(allPieces)){
+            checkText.innerText = "IN CHECK";
+        }else{
+            checkText.innerText = "NOT IN CHECK";
+        }
     }
         selectedPieceHTML = null;
         selectedPiece = null;
+ 
+}
 
+
+function check(allPieces){
+    let inCheck = false;
+    allPieces.forEach(piece => {
+        let x = parseInt(piece.x);
+        let y = parseInt(piece.y);
+        let type = piece.piece;
+        if(type=="pawn"){
+            if(piece.color=="white"){
+                allPieces.forEach(piece2 => {
+                    if((piece2.x==parseInt(x)+1 || piece2.x==x-1) && (piece2.y==parseInt(y)+1) && piece2.piece=="king"){
+                        colorInCheck = "black";
+                        console.log("CHECK");
+                        inCheck=true;
+                        return;
+                    }
+                });
+            }else{
+                allPieces.forEach(piece2 => {
+                    if((piece2.x==parseInt(x)+1 || piece2.x==x-1) && (piece2.y==y-1) && piece2.piece=="king"){
+                        colorInCheck = "white";
+                        inCheck=true;
+                        console.log("CHECK");
+                        return;
+                    }
+                });
+            }
+        }
+        if(type=="bishop" || type=="queen"){
+            for(let i = x+1; i<=8; i++){//checks towards the right
+                if((findPiece(allPieces, i, y+(i-x)) != null && findPiece(allPieces, i, y+(i-x)).piece == "king" && findPiece(allPieces, i, y+(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y+(i-x), x, y, "bishop")) || 
+                (findPiece(allPieces, i, y-(i-x)) != null && findPiece(allPieces, i, y-(i-x)).piece == "king" && findPiece(allPieces, i, y-(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y-(i-x), x, y, "bishop"))){
+                    inCheck=true;
+                    console.log("check");
+                    return;
+                }
+            }
+            for(let i = x-1; i>=1; i--){//checks towards the left
+                if((findPiece(allPieces, i, y+(i-x)) != null && findPiece(allPieces, i, y+(i-x)).piece == "king" && findPiece(allPieces, i, y+(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y+(i-x), x, y, "bishop")) || 
+                (findPiece(allPieces, i, y-(i-x)) != null && findPiece(allPieces, i, y-(i-x)).piece == "king" && findPiece(allPieces, i, y-(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y-(i-x), x, y, "bishop"))){
+                    inCheck=true;
+                    console.log("check");
+                    return;
+                }
+            }
+        }
+        if(type=="rook" || type=="queen"){
+            for(let i = 1; i<=8; i++){
+                if(findPiece(allPieces, x, i) != null && findPiece(allPieces, x, i).piece == "king" && findPiece(allPieces, x, i).color != piece.color && !piece.checkIfPieceInPath(allPieces, x, i, x, y, "rook")||
+                findPiece(allPieces, i, y) != null && findPiece(allPieces, i, y).piece == "king" && findPiece(allPieces, i, y).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y, x, y, "rook")){
+                    inCheck = true;
+                    console.log("check");
+                    return;
+                }
+            }
+        }
+        if(type=="knight"){
+            knightx.forEach((xValue, i) => {
+                if(findPiece(allPieces, x+xValue, y+knighty[i]) != null && findPiece(allPieces, x+xValue, y+knighty[i]).piece == "king" && findPiece(allPieces, x+xValue, y+knighty[i]).color != piece.color && !piece.checkIfPieceInPath(allPieces, x+xValue, y+knighty[i], x, y, "knight")){
+                    inCheck = true;
+                    console.log("check");
+                    return;
+                }
+            });
+        }
+    });
+    return inCheck;
+}
+
+//attempts to find a piece at a specified x and y and return it. If no piece is found, returns null
+function findPiece(allPieces, x, y){
+    let foundPiece;
+    allPieces.forEach(piece => {
+        if(piece.x == x && piece.y == y){
+            foundPiece = piece;
+        }
+    });
+    if(foundPiece != null){
+        return foundPiece;
+    }
+    return null;
 }
