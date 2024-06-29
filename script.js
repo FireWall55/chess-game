@@ -13,7 +13,7 @@ const pieces = [
     rook, knight, bishop, queen, king, bishop, knight, rook,
     pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
     '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', knight,
     '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '',
     pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
@@ -21,6 +21,7 @@ const pieces = [
 ];
 const knightx = [-2, -2, -1, -1, 1, 1, 2, 2];
 const knighty = [-1, 1, 2, -2, 2, -2, 1, -1];
+const colorSwap = { "white": "black", "black": "white"};
 
 
 let selectedPieceHTML, selectedPiece;
@@ -53,7 +54,7 @@ function createBoard(){
         let piece;
         if(!(startPiece === '')){ //if there is actually a piece there
             let color;
-            if(row==1 || row==2){
+            if(row==1 || row==2 || row==5){
                 color = "white";
             }
             if(row==7 || row==8){
@@ -123,13 +124,6 @@ function movePiece(piece, newSquare, oldSquare){
     //console.log(piece.html);
 
     if(piece.isValidMove(newSquare, oldSquare, false, allPieces, whiteMove)){
-        whiteMove = !whiteMove;
-        
-        if(whiteMove){
-            text.innerText = "It's white's move";
-        }else{
-            text.innerText = "It's black's move";
-        }
         
         move+=1;
         newSquare.innerHTML = piece.html;
@@ -144,12 +138,25 @@ function movePiece(piece, newSquare, oldSquare){
             newSquare.firstChild.firstChild.classList.add("black");
         }
         if(check(allPieces)){
+            let checkMateColor = checkmate(allPieces);
             checkText.innerText = "IN CHECK";
+            if(checkMateColor != ""){
+                checkText.innerText = `CHECKMATE BY ${checkMateColor}`;
+            }
         }else{
             checkText.innerText = "NOT IN CHECK";
         }
 
+        whiteMove = !whiteMove;
+        
+        if(whiteMove){
+            text.innerText = "It's white's move";
+        }else{
+            text.innerText = "It's black's move";
+        }
+
     }
+
         selectedPieceHTML = null;
         selectedPiece = null;
 }
@@ -158,13 +165,6 @@ function capture(piece, newSquare, oldSquare){
 
 
     if(piece.isValidMove(newSquare, oldSquare, true, allPieces, whiteMove)){
-        whiteMove = !whiteMove;
-
-        if(whiteMove){
-            text.innerText = "It's white's move";
-        }else{
-            text.innerText = "It's black's move";
-        }
 
 
         move+=1;
@@ -185,10 +185,24 @@ function capture(piece, newSquare, oldSquare){
             newSquare.firstChild.firstChild.classList.add("black");
         }
         if(check(allPieces)){
-            checkText.innerText = "IN CHECK";
+            if(checkmate(allPieces)){
+                checkText.innerText = `CHECKMATE BY ${colorSwap[colorInCheck]}`;
+                console.log(colorSwap[colorInCheck]);
+            }
+
         }else{
             checkText.innerText = "NOT IN CHECK";
         }
+
+        whiteMove = !whiteMove;
+
+        if(whiteMove){
+            text.innerText = "It's white's move";
+        }else{
+            text.innerText = "It's black's move";
+        }
+
+
     }
         selectedPieceHTML = null;
         selectedPiece = null;
@@ -227,6 +241,7 @@ function check(allPieces){
             for(let i = x+1; i<=8; i++){//checks towards the right
                 if((findPiece(allPieces, i, y+(i-x)) != null && findPiece(allPieces, i, y+(i-x)).piece == "king" && findPiece(allPieces, i, y+(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y+(i-x), x, y, "bishop")) || 
                 (findPiece(allPieces, i, y-(i-x)) != null && findPiece(allPieces, i, y-(i-x)).piece == "king" && findPiece(allPieces, i, y-(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y-(i-x), x, y, "bishop"))){
+                    colorInCheck = findPiece(allPieces, i, y-(i-x)).color;
                     inCheck=true;
                     console.log("check");
                     return;
@@ -235,6 +250,7 @@ function check(allPieces){
             for(let i = x-1; i>=1; i--){//checks towards the left
                 if((findPiece(allPieces, i, y+(i-x)) != null && findPiece(allPieces, i, y+(i-x)).piece == "king" && findPiece(allPieces, i, y+(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y+(i-x), x, y, "bishop")) || 
                 (findPiece(allPieces, i, y-(i-x)) != null && findPiece(allPieces, i, y-(i-x)).piece == "king" && findPiece(allPieces, i, y-(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y-(i-x), x, y, "bishop"))){
+                    colorInCheck = findPiece(allPieces, i, y-(i-x)).color;
                     inCheck=true;
                     console.log("check");
                     return;
@@ -245,6 +261,7 @@ function check(allPieces){
             for(let i = 1; i<=8; i++){
                 if(findPiece(allPieces, x, i) != null && findPiece(allPieces, x, i).piece == "king" && findPiece(allPieces, x, i).color != piece.color && !piece.checkIfPieceInPath(allPieces, x, i, x, y, "rook")||
                 findPiece(allPieces, i, y) != null && findPiece(allPieces, i, y).piece == "king" && findPiece(allPieces, i, y).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y, x, y, "rook")){
+                    colorInCheck = findPiece(allPieces, i, y).color;
                     inCheck = true;
                     console.log("check");
                     return;
@@ -254,6 +271,7 @@ function check(allPieces){
         if(type=="knight"){
             knightx.forEach((xValue, i) => {
                 if(findPiece(allPieces, x+xValue, y+knighty[i]) != null && findPiece(allPieces, x+xValue, y+knighty[i]).piece == "king" && findPiece(allPieces, x+xValue, y+knighty[i]).color != piece.color && !piece.checkIfPieceInPath(allPieces, x+xValue, y+knighty[i], x, y, "knight")){
+                    colorInCheck = findPiece(allPieces, x+xValue, y+knighty[i]).color;
                     inCheck = true;
                     console.log("check");
                     return;
@@ -276,4 +294,56 @@ function findPiece(allPieces, x, y){
         return foundPiece;
     }
     return null;
+}
+
+
+function checkmate(allPieces){//returns the color that won, if not checkmate returns ""
+    let checkmate = false;
+    let piecesAroundKing = 0, x, y;
+    allPieces.forEach(piece => {
+        if(piece.piece == "king"){
+            x = parseInt(piece.x);
+            y = parseInt(piece.y);
+
+
+            for(let i = -1; i<=1; i++){
+                for(let j = -1; j<=1; j++){
+                    if(findPiece(allPieces, x+i, y+j)!=null && findPiece(allPieces, x+i, y+j).color == piece.color){
+                        piecesAroundKing++;
+                    }
+                    if(x+i<=8 && x+i>=1 && y+j<=8 && y+j>=1){//if the square is in the board
+                        allPieces.forEach(piece2 => {
+                        //runs through every piece to see if anything can attack the surrounding square
+                            //if(piece2.isValidMove()){
+
+                            //}
+                        });
+                    }
+                }
+            }
+            let piecesNeeded;
+            if((y==8 || y==1) && (x==1 || x==8)){
+                piecesNeeded = 4;
+            }else if(y==8 || y==1 || x==1 || x==8){
+                piecesNeeded = 6;
+            }else{
+                piecesNeeded = 9;
+            }
+
+            
+
+
+            if(piecesAroundKing==piecesNeeded){
+                console.log("CHECKMATE");
+                checkmate = true;
+            }
+        }
+    });
+    
+
+
+    if(check(allPieces)){
+        return checkmate;
+    }
+
 }

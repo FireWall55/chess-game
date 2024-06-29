@@ -262,13 +262,6 @@ export default class Piece{
     }
 
 
-    numOfValidMoves(allPieces){
-        
-    }
-    
-
-
-
 
     
 }
