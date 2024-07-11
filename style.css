@@ -74,3 +74,11 @@ path{
     position: relative;
     z-index: 9;
 }
+
+.code-notes{
+    position: absolute;
+    margin-top: 20%;
+    margin-left: 70%;
+    font-size: 2rem;
+    width: 300px;
+}

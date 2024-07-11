@@ -1,7 +1,7 @@
 export default class Piece{
     constructor(y, x, pieceHTML, color, piece){
-        this.y = y;
         this.x = x;
+        this.y = y;
         this.pieceHTML = pieceHTML;
         this.color = color;
         this.piece = piece;
@@ -21,7 +21,7 @@ export default class Piece{
         this.x = col;
     }
 
-    isValidMove(newLoc, oldLoc, isCapturing, allPieces, whiteMove) {//newLoc and oldLoc are squares
+    isValidMove(newx, newy, oldx, oldy, isCapturing, allPieces, whiteMove) {//newLoc and oldLoc are squares
 
         if(this.color=="black" && whiteMove){
             return false;
@@ -32,10 +32,10 @@ export default class Piece{
 
 
         let canMove = true;
-        let newY = parseInt(newLoc.getAttribute("y"));
-        let newX = parseInt(newLoc.getAttribute("x"));
-        let oldY = parseInt(oldLoc.getAttribute("y"));
-        let oldX = parseInt(oldLoc.getAttribute("x"));
+        let newY = parseInt(newy);
+        let newX = parseInt(newx);
+        let oldY = parseInt(oldy);
+        let oldX = parseInt(oldx);
 
         
 
@@ -51,8 +51,6 @@ export default class Piece{
         if(!canMove){
             return false;
         }
-
-        console.log(this.moves);
 
         if(this.piece=="pawn" && isCapturing==false){//checks pawn movement (no capturing)
             console.log("pawn just moved");
@@ -81,7 +79,6 @@ export default class Piece{
             }
         }
         if(this.piece=="pawn" && isCapturing==true){ //checks pawn capturing movement
-            console.log("pawn just captured");
             if(this.color=="black"){
                 if(newY==oldY-1 && (newX==oldX+1 || newX==oldX-1)){
                     this.moves+=1

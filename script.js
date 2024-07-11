@@ -11,17 +11,28 @@ const queen = '<div id="queen" class="piece"><svg xmlns="http://www.w3.org/2000/
 const king = '<div id="pawn" class="piece"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M224 0c17.7 0 32 14.3 32 32V48h16c17.7 0 32 14.3 32 32s-14.3 32-32 32H256v48H408c22.1 0 40 17.9 40 40c0 5.3-1 10.5-3.1 15.4L368 400H80L3.1 215.4C1 210.5 0 205.3 0 200c0-22.1 17.9-40 40-40H192V112H176c-17.7 0-32-14.3-32-32s14.3-32 32-32h16V32c0-17.7 14.3-32 32-32zM38.6 473.4L80 432H368l41.4 41.4c4.2 4.2 6.6 10 6.6 16c0 12.5-10.1 22.6-22.6 22.6H54.6C42.1 512 32 501.9 32 489.4c0-6 2.4-11.8 6.6-16z"/></svg></div>'
 const pieces = [
     rook, knight, bishop, queen, king, bishop, knight, rook,
-    pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
-    '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', knight,
+    pawn, pawn, pawn, pawn, '', pawn, pawn, pawn,
     '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', rook,
     pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
     rook, knight, bishop, queen, king, bishop, knight, rook,
 ];
+const pieces2 = [
+    '', '', '', '', '', '', queen, '',
+    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    rook, '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', king,
+    rook, rook, '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', pawn,
+];
 const knightx = [-2, -2, -1, -1, 1, 1, 2, 2];
 const knighty = [-1, 1, 2, -2, 2, -2, 1, -1];
-const colorSwap = { "white": "black", "black": "white"};
+const colorSwap = { "white": "black",
+                    "black": "white"};
 
 
 let selectedPieceHTML, selectedPiece;
@@ -29,6 +40,7 @@ let allPieces = [];
 let move = 0;
 let colorInCheck = "";
 let whiteMove = true; //if true, white's turn, if false, black's turn
+let checkingPiece = null;
 createBoard();
 
 
@@ -36,7 +48,7 @@ createBoard();
 //Make "legal moves" thing
 
 function createBoard(){
-    pieces.forEach((startPiece, i )=> {
+    pieces2.forEach((startPiece, i )=> {
         const square = document.createElement('div');
         square.classList.add('square');
         let column = (1+(i%8)).toString();
@@ -54,11 +66,11 @@ function createBoard(){
         let piece;
         if(!(startPiece === '')){ //if there is actually a piece there
             let color;
-            if(row==1 || row==2 || row==5){
-                color = "white";
-            }
-            if(row==7 || row==8){
+            if(row==1 || row==2 || row==4){
                 color = "black";
+            }
+            if(row==7 || row==8 || row==3 || row==5){
+                color = "white";
             }
             let pieceType;
             if(startPiece == pawn) { pieceType="pawn"; } if(startPiece == rook) { pieceType="rook"; } 
@@ -123,7 +135,7 @@ function click(e){
 function movePiece(piece, newSquare, oldSquare){
     //console.log(piece.html);
 
-    if(piece.isValidMove(newSquare, oldSquare, false, allPieces, whiteMove)){
+    if(piece.isValidMove(newSquare.getAttribute("x"), newSquare.getAttribute("y"), oldSquare.getAttribute("x"), oldSquare.getAttribute("y"), false, allPieces, whiteMove)){
         
         move+=1;
         newSquare.innerHTML = piece.html;
@@ -138,11 +150,12 @@ function movePiece(piece, newSquare, oldSquare){
             newSquare.firstChild.firstChild.classList.add("black");
         }
         if(check(allPieces)){
-            let checkMateColor = checkmate(allPieces);
             checkText.innerText = "IN CHECK";
-            if(checkMateColor != ""){
-                checkText.innerText = `CHECKMATE BY ${checkMateColor}`;
+            if(checkmate(allPieces)){
+                checkText.innerText = `CHECKMATE BY ${colorSwap[colorInCheck]}`;
+                console.log(colorSwap[colorInCheck]);
             }
+
         }else{
             checkText.innerText = "NOT IN CHECK";
         }
@@ -164,7 +177,7 @@ function movePiece(piece, newSquare, oldSquare){
 function capture(piece, newSquare, oldSquare){
 
 
-    if(piece.isValidMove(newSquare, oldSquare, true, allPieces, whiteMove)){
+    if(piece.isValidMove(newSquare.getAttribute("x"), newSquare.getAttribute("y"), oldSquare.getAttribute("x"), oldSquare.getAttribute("y"), true, allPieces, whiteMove)){
 
 
         move+=1;
@@ -185,6 +198,7 @@ function capture(piece, newSquare, oldSquare){
             newSquare.firstChild.firstChild.classList.add("black");
         }
         if(check(allPieces)){
+            checkText.innerText = "IN CHECK";
             if(checkmate(allPieces)){
                 checkText.innerText = `CHECKMATE BY ${colorSwap[colorInCheck]}`;
                 console.log(colorSwap[colorInCheck]);
@@ -222,6 +236,7 @@ function check(allPieces){
                     if((piece2.x==parseInt(x)+1 || piece2.x==x-1) && (piece2.y==parseInt(y)+1) && piece2.piece=="king"){
                         colorInCheck = "black";
                         console.log("CHECK");
+                        checkingPiece = piece;
                         inCheck=true;
                         return;
                     }
@@ -231,6 +246,7 @@ function check(allPieces){
                     if((piece2.x==parseInt(x)+1 || piece2.x==x-1) && (piece2.y==y-1) && piece2.piece=="king"){
                         colorInCheck = "white";
                         inCheck=true;
+                        checkingPiece = piece;
                         console.log("CHECK");
                         return;
                     }
@@ -241,8 +257,14 @@ function check(allPieces){
             for(let i = x+1; i<=8; i++){//checks towards the right
                 if((findPiece(allPieces, i, y+(i-x)) != null && findPiece(allPieces, i, y+(i-x)).piece == "king" && findPiece(allPieces, i, y+(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y+(i-x), x, y, "bishop")) || 
                 (findPiece(allPieces, i, y-(i-x)) != null && findPiece(allPieces, i, y-(i-x)).piece == "king" && findPiece(allPieces, i, y-(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y-(i-x), x, y, "bishop"))){
-                    colorInCheck = findPiece(allPieces, i, y-(i-x)).color;
+                    if(findPiece(allPieces, i, y+(i-x)) != null){
+                        colorInCheck = findPiece(allPieces, i, y+(i-x)).color;
+                    }
+                    if(findPiece(allPieces, i, y-(i-x)) != null){
+                        colorInCheck = findPiece(allPieces, i, y-(i-x)).color;
+                    }
                     inCheck=true;
+                    checkingPiece = piece;
                     console.log("check");
                     return;
                 }
@@ -250,8 +272,14 @@ function check(allPieces){
             for(let i = x-1; i>=1; i--){//checks towards the left
                 if((findPiece(allPieces, i, y+(i-x)) != null && findPiece(allPieces, i, y+(i-x)).piece == "king" && findPiece(allPieces, i, y+(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y+(i-x), x, y, "bishop")) || 
                 (findPiece(allPieces, i, y-(i-x)) != null && findPiece(allPieces, i, y-(i-x)).piece == "king" && findPiece(allPieces, i, y-(i-x)).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y-(i-x), x, y, "bishop"))){
-                    colorInCheck = findPiece(allPieces, i, y-(i-x)).color;
+                    if(findPiece(allPieces, i, y+(i-x)) != null){
+                        colorInCheck = findPiece(allPieces, i, y+(i-x)).color;
+                    }
+                    if(findPiece(allPieces, i, y-(i-x)) != null){
+                        colorInCheck = findPiece(allPieces, i, y-(i-x)).color;
+                    }
                     inCheck=true;
+                    checkingPiece = piece;
                     console.log("check");
                     return;
                 }
@@ -261,8 +289,14 @@ function check(allPieces){
             for(let i = 1; i<=8; i++){
                 if(findPiece(allPieces, x, i) != null && findPiece(allPieces, x, i).piece == "king" && findPiece(allPieces, x, i).color != piece.color && !piece.checkIfPieceInPath(allPieces, x, i, x, y, "rook")||
                 findPiece(allPieces, i, y) != null && findPiece(allPieces, i, y).piece == "king" && findPiece(allPieces, i, y).color != piece.color && !piece.checkIfPieceInPath(allPieces, i, y, x, y, "rook")){
-                    colorInCheck = findPiece(allPieces, i, y).color;
+                    if(findPiece(allPieces, x, i) != null){
+                        colorInCheck = findPiece(allPieces, x, i).color;
+                    }
+                    if(findPiece(allPieces, i, y) != null){
+                        colorInCheck = findPiece(allPieces, i, y).color
+                    }
                     inCheck = true;
+                    checkingPiece = piece;
                     console.log("check");
                     return;
                 }
@@ -273,6 +307,7 @@ function check(allPieces){
                 if(findPiece(allPieces, x+xValue, y+knighty[i]) != null && findPiece(allPieces, x+xValue, y+knighty[i]).piece == "king" && findPiece(allPieces, x+xValue, y+knighty[i]).color != piece.color && !piece.checkIfPieceInPath(allPieces, x+xValue, y+knighty[i], x, y, "knight")){
                     colorInCheck = findPiece(allPieces, x+xValue, y+knighty[i]).color;
                     inCheck = true;
+                    checkingPiece = piece;
                     console.log("check");
                     return;
                 }
@@ -301,26 +336,108 @@ function checkmate(allPieces){//returns the color that won, if not checkmate ret
     let checkmate = false;
     let piecesAroundKing = 0, x, y;
     allPieces.forEach(piece => {
-        if(piece.piece == "king"){
+        piecesAroundKing = 0;
+        if(piece.piece == "king" && piece.color=="black"){
             x = parseInt(piece.x);
             y = parseInt(piece.y);
 
 
+            let blocking = false;
+            allPieces.forEach(piece2 => {
+                //checks if something can block the check
+                if(piece2.color != checkingPiece.color && checkingPiece.piece != "knight" && piece2.piece != "king"){
+                    //the piece might be able to block the check
+                    if(checkingPiece.piece == "rook"){
+                        if(checkingPiece.x == piece.x){
+                            //the piece was checking vertically
+                            if(checkingPiece.y>piece.y){
+                                //if the king is lower than the checking piece
+                                for(let i = parseInt(piece.y) + 1; i<checkingPiece.y; i++){
+                                    //runs up from the king 
+                                    if(piece2.isValidMove(checkingPiece.x, i.toString(), piece2.x, piece2.y, false, allPieces, !whiteMove)){
+                                        blocking = true;
+                                        console.log("blocking", blocking);
+                                    }
+                                }
+                            }else{
+                                //if the king is higher than the checking piece
+                                for(let i = parseInt(checkingPiece.y) + 1; i<parseInt(piece.y); i++){
+                                    //runs up  from the ckecing piece
+                                    if(piece2.isValidMove(checkingPiece.x, i.toString(), piece2.x, piece2.y, false, allPieces, !whiteMove)){
+                                        blocking = true;
+                                        console.log("blocking", blocking, piece2);
+                                    }
+                                }
+                            }
+
+                        }else if(checkingPiece.y == piece.y){
+                            //the piece was checking horizontially
+                            if(checkingPiece.x>piece.x){
+                                //king is to the left
+                                for(let i = parseInt(piece.x) + 1; i<parseInt(checkingPiece.x); i++){
+                                    if(piece2.isValidMove(i, piece.y, piece2.x, piece2.y, false, allPieces, !whiteMove)){
+                                        blocking = true;
+                                        console.log("blocking", blocking, piece2);
+                                    }
+                                }
+                            }else{
+                                //king is to the right
+                                for(let i = parseInt(checkingPiece.x) + 1; i<parseInt(piece.x); i++){
+                                    if(piece2.isValidMove(i, piece.y, piece2.x, piece2.y, false, allPieces, !whiteMove)){
+                                        blocking = true;
+                                        console.log("blocking", blocking, piece2);
+                                    }
+                                }
+                            }
+                        }
+                    }else if(checkingPiece.piece == "bishop"){
+                        
+                    }
+                }
+            });
+
+
+
+
+
+
+            if(blocking){
+                return false;
+            }
+            let skip = false;
+            //checks around the piece
             for(let i = -1; i<=1; i++){
                 for(let j = -1; j<=1; j++){
+                    skip = false;
                     if(findPiece(allPieces, x+i, y+j)!=null && findPiece(allPieces, x+i, y+j).color == piece.color){
                         piecesAroundKing++;
+                        continue;
                     }
+                    
                     if(x+i<=8 && x+i>=1 && y+j<=8 && y+j>=1){//if the square is in the board
+                        console.log("x", x+i, "y", y+j);
                         allPieces.forEach(piece2 => {
-                        //runs through every piece to see if anything can attack the surrounding square
-                            //if(piece2.isValidMove()){
-
-                            //}
+                            //runs through every piece to see if anything can attack the surrounding square
+                            if(whiteMove){//white is the one trying to checkmate
+                                if(piece2.color != piece.color && piece2.isValidMove(x+i, y+j, piece2.x, piece2.y, false, allPieces, whiteMove)){
+                                    piecesAroundKing++;
+                                    console.log("SMTH IS BLOCKING SMTH");
+                                    skip = true;
+                                }
+                            }else{
+                                if(piece2.color != piece.color && piece2.isValidMove(x+i, y+j, piece2.x, piece2.y, false, allPieces, !whiteMove)){
+                                    piecesAroundKing++;
+                                    skip = true;
+                                }
+                            }
+                            if(skip){
+                                return;
+                            }
                         });
                     }
                 }
             }
+            console.log("piecesAroundKing", piece.color, piecesAroundKing, 2);
             let piecesNeeded;
             if((y==8 || y==1) && (x==1 || x==8)){
                 piecesNeeded = 4;
@@ -329,6 +446,7 @@ function checkmate(allPieces){//returns the color that won, if not checkmate ret
             }else{
                 piecesNeeded = 9;
             }
+            console.log("piecesNeeded", piecesNeeded, "piecesAroundKing", piecesAroundKing);
 
             
 
@@ -336,7 +454,12 @@ function checkmate(allPieces){//returns the color that won, if not checkmate ret
             if(piecesAroundKing==piecesNeeded){
                 console.log("CHECKMATE");
                 checkmate = true;
+                if(check(allPieces)){
+                    return checkmate;
+                }
             }
+        }else if(piece.piece == "king" && piece.color == "white"){
+            ///////////////////////////////////////////////////////////////////////////////////
         }
     });
     
