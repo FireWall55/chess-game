@@ -11,23 +11,23 @@ const queen = '<div id="queen" class="piece"><svg xmlns="http://www.w3.org/2000/
 const king = '<div id="pawn" class="piece"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M224 0c17.7 0 32 14.3 32 32V48h16c17.7 0 32 14.3 32 32s-14.3 32-32 32H256v48H408c22.1 0 40 17.9 40 40c0 5.3-1 10.5-3.1 15.4L368 400H80L3.1 215.4C1 210.5 0 205.3 0 200c0-22.1 17.9-40 40-40H192V112H176c-17.7 0-32-14.3-32-32s14.3-32 32-32h16V32c0-17.7 14.3-32 32-32zM38.6 473.4L80 432H368l41.4 41.4c4.2 4.2 6.6 10 6.6 16c0 12.5-10.1 22.6-22.6 22.6H54.6C42.1 512 32 501.9 32 489.4c0-6 2.4-11.8 6.6-16z"/></svg></div>'
 const pieces = [
     rook, knight, bishop, queen, king, bishop, knight, rook,
-    pawn, pawn, pawn, pawn, '', pawn, pawn, pawn,
+    pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
     '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', rook,
+    '', '', '', '', '', '', '', '',
     pawn, pawn, pawn, pawn, pawn, pawn, pawn, pawn,
     rook, knight, bishop, queen, king, bishop, knight, rook,
 ];
 const pieces2 = [
-    '', '', '', '', '', '', queen, '',
+    '', '', '', king, '', '', '', '',
     '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '',
-    rook, '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', king,
-    rook, rook, '', '', '', '', '', '',
     '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', pawn,
+    '', rook, '', rook, '', '', '', '',
+    '', '', '', rook, '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    '', king, '', '', '', '', '', '',
 ];
 const knightx = [-2, -2, -1, -1, 1, 1, 2, 2];
 const knighty = [-1, 1, 2, -2, 2, -2, 1, -1];
@@ -48,7 +48,7 @@ createBoard();
 //Make "legal moves" thing
 
 function createBoard(){
-    pieces2.forEach((startPiece, i )=> {
+    pieces.forEach((startPiece, i )=> {
         const square = document.createElement('div');
         square.classList.add('square');
         let column = (1+(i%8)).toString();
@@ -66,11 +66,11 @@ function createBoard(){
         let piece;
         if(!(startPiece === '')){ //if there is actually a piece there
             let color;
-            if(row==1 || row==2 || row==4){
-                color = "black";
+            if(row==1 || row==2 || row==4 || row==6){
+                color = "white";
             }
             if(row==7 || row==8 || row==3 || row==5){
-                color = "white";
+                color = "black";
             }
             let pieceType;
             if(startPiece == pawn) { pieceType="pawn"; } if(startPiece == rook) { pieceType="rook"; } 
@@ -404,11 +404,9 @@ function checkmate(allPieces){//returns the color that won, if not checkmate ret
             if(blocking){
                 return false;
             }
-            let skip = false;
             //checks around the piece
             for(let i = -1; i<=1; i++){
                 for(let j = -1; j<=1; j++){
-                    skip = false;
                     if(findPiece(allPieces, x+i, y+j)!=null && findPiece(allPieces, x+i, y+j).color == piece.color){
                         piecesAroundKing++;
                         continue;
@@ -416,22 +414,19 @@ function checkmate(allPieces){//returns the color that won, if not checkmate ret
                     
                     if(x+i<=8 && x+i>=1 && y+j<=8 && y+j>=1){//if the square is in the board
                         console.log("x", x+i, "y", y+j);
-                        allPieces.forEach(piece2 => {
+                        allPieces.some(piece2 => {
                             //runs through every piece to see if anything can attack the surrounding square
                             if(whiteMove){//white is the one trying to checkmate
                                 if(piece2.color != piece.color && piece2.isValidMove(x+i, y+j, piece2.x, piece2.y, false, allPieces, whiteMove)){
                                     piecesAroundKing++;
                                     console.log("SMTH IS BLOCKING SMTH");
-                                    skip = true;
+                                    return true;
                                 }
                             }else{
                                 if(piece2.color != piece.color && piece2.isValidMove(x+i, y+j, piece2.x, piece2.y, false, allPieces, !whiteMove)){
                                     piecesAroundKing++;
-                                    skip = true;
+                                    return true;
                                 }
-                            }
-                            if(skip){
-                                return;
                             }
                         });
                     }
